@@ -35,7 +35,7 @@ public class Node {
 
     //Recursively return solution
     public void getSolutionCoords() {
-        Traverser.path.add(coords);
+        BfsAlgorithm.path.add(coords);
         if(parentNode != null) {
             parentNode.getSolutionCoords();
         }
@@ -44,13 +44,13 @@ public class Node {
 
     //Check if we've reached goal
     public boolean reachedGoal() {
-        return x == Traverser.goalX && y == Traverser.goalY;
+        return x == BfsAlgorithm.goalX && y == BfsAlgorithm.goalY;
     }
 
     public boolean isLegal() {
-        if(y >= 0 && y < Traverser.currentMaze.length) {
-            if(x >= 0 && x < Traverser.currentMaze[0].length) {
-                return Traverser.currentMaze[y][x] == Traverser.emptyBlock || Traverser.currentMaze[y][x] == Traverser.pathMarking;
+        if(y >= 0 && y < BfsAlgorithm.currentMaze.length) {
+            if(x >= 0 && x < BfsAlgorithm.currentMaze[0].length) {
+                return BfsAlgorithm.currentMaze[y][x] == Utils.EMPTY_BLOCK || BfsAlgorithm.currentMaze[y][x] == Utils.PATH_MARKING;
             }
         }
         return false;
