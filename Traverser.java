@@ -50,23 +50,16 @@ public class Traverser extends JFrame {
     public static final String ANSI_RED = "\u001B[31m";
     private int mSuperNumber;
 
-    int manualclick;
+    private int manualclick;
     private boolean firstask = true;
     private boolean haveStart = false;
     private boolean haveEnd = false;
 
 
-
     public static void main(String[] args) {
 
-        SwingUtilities.invokeLater(new Runnable() {  // run the program through Swing (the entire program is run by GUI)
-            // we chose invokelater it won't make much difference if we chose invokeAndWait since the operation done by the first button will be done in a very short time
-            @Override                                // you can read more here: https://docs.oracle.com/javase/tutorial/uiswing/concurrency/initial.html
-            public void run() {
-                Traverser maze = new Traverser();              // we create new class which will invoke the constructor
+        new Traverser();              // we create new class which will invoke the constructor
 
-            }
-        });
     }
 
     Traverser() {
@@ -81,13 +74,17 @@ public class Traverser extends JFrame {
         saveMazeForRestart(maze);
 
         setViews();
+        solve.setEnabled(false);
+        solveStepByStep.setEnabled(false);
+
+        message.setText("<html> Hello. This is maze solver.<br> Please select start and end position by clicking to the empty box in maze </html>");
 
 
 //        new Traverser();
     }
 
     private void saveMazeForRestart(char[][] maze) {
-        currentMazeforRestart = new char[maze.length][ maze[0].length];
+        currentMazeforRestart = new char[maze.length][maze[0].length];
         for (int i = 0; i < maze.length; i++) {
             for (int j = 0; j < maze[0].length; j++) {
                 currentMazeforRestart[i][j] = maze[i][j];
@@ -142,12 +139,16 @@ public class Traverser extends JFrame {
                 String currentCoords = i + "," + j;
                 if (path.contains(currentCoords)) {
                     System.out.print(ANSI_RED + pathMarking + AINSI_BLACK);
+
                     currentMaze[i][j] = '0';
+
                 } else {
                     System.out.print(currentMaze[i][j]);
                 }
             }
         }
+        currentMaze[startY][startX] = 'S';
+        currentMaze[goalY][goalX] = 'G';
         System.out.println("\n");
         repaint();
 
@@ -161,7 +162,15 @@ public class Traverser extends JFrame {
             currentMaze[Integer.parseInt(split[0])][Integer.parseInt(split[1])] = '0';
             manualclick++;
             repaint();
+            if (!(path.size() == manualclick)) {
+                message.setText("<html>You want to solve the maze step-by-step.<br> You have to make " + (path.size() - manualclick) + " steps</html>");
+            } else {
+                message.setText("<html>Congrats! Maze was solved after " + path.size() + "steps </html>");
+
+            }
         }
+
+
     }
 
 //    //Convert text file to 2D char array
@@ -277,7 +286,7 @@ public class Traverser extends JFrame {
 //        textBFS = new JTextField();
 
         // initialize objects for Buttons
-        solveStepByStep = new JButton("Solve Step-by-step");
+        solveStepByStep = new JButton("Step-by-step");
         solve = new JButton("Solve");
         clear = new JButton("Clear");
         exit = new JButton("Exit");
@@ -302,7 +311,7 @@ public class Traverser extends JFrame {
         setVisible(true);
 
         // set the positions of the components on the JFrame (x,y,width,height). here we chose the position by hand, this is why we sat the set Layout to null
-        message.setBounds(500, 180, 460, 23);
+        message.setBounds(500, 180, 400, 80);
         solveStepByStep.setBounds(500, 50, 100, 40);
         solve.setBounds(630, 50, 100, 40);
         clear.setBounds(760, 50, 100, 40);
@@ -325,11 +334,15 @@ public class Traverser extends JFrame {
 
                 if (solution == null) {
                     System.out.println("No solution");
+                    message.setText("Sorry, Maze don`t have solution");
                 } else {
                     System.out.println("Solution: ");
                     solution.getSolutionCoords();
                     printSolution();
                     System.out.println(solution.toString());
+                    message.setText("<html>Maze was solved, after " + (Traverser.path.size() - 1) + " steps <br> Now you can press button \"clear\" or button \"next maze\" <html>");
+                    solve.setEnabled(false);
+                    solveStepByStep.setEnabled(false);
                 }
 
             }
@@ -352,7 +365,10 @@ public class Traverser extends JFrame {
                 startY = ' ';
                 goalX = ' ';
                 goalY = ' ';
+                solve.setEnabled(false);
+                solveStepByStep.setEnabled(false);
                 repaint();
+                message.setText("<html>We show new maze <br> Please select start and end position </html>");
             }
         });
 
@@ -369,7 +385,10 @@ public class Traverser extends JFrame {
                 goalX = ' ';
                 goalY = ' ';
                 getSavedMaze();
+                solve.setEnabled(false);
+                solveStepByStep.setEnabled(false);
                 repaint();
+                message.setText("<html>You refrash a maze<br> Please select start and end position </html>");
             }
         });
 
@@ -391,6 +410,7 @@ public class Traverser extends JFrame {
 
                     if (solution == null) {
                         System.out.println("No solution");
+                        message.setText("Sorry, but maze don`t have solution");
                     } else {
                         System.out.println("Solution: ");
                         solution.getSolutionCoords();
@@ -405,7 +425,6 @@ public class Traverser extends JFrame {
             }
         });
     }
-
 
 
     private void revertPath() {
@@ -526,12 +545,14 @@ public class Traverser extends JFrame {
                         startX = col;
                         startY = row;
                         haveStart = true;
+                        message.setText("<html>You set start position<br> Now select end position</html>");
                     } else {
                         if (!haveEnd) {
-                        currentMaze[row][col] = 'G';
+                            currentMaze[row][col] = 'G';
                             goalX = col;
                             goalY = row;
                             haveEnd = true;
+                            message.setText("<html>You set end position</html>");
                         }
                     }
                 } else if (cur_val == 'S') {
@@ -540,15 +561,27 @@ public class Traverser extends JFrame {
                     startX = ' ';
                     startY = ' ';
                     haveStart = false;
+                    message.setText("You deselect start position");
                 } else if (cur_val == 'G') {
                     currentMaze[row][col] = ' ';
                     goalX = ' ';
                     goalY = ' ';
                     haveEnd = false;
+                    message.setText("You deselect end position");
                 }
 
+                if (haveStart && haveEnd) {
+                    solve.setEnabled(true);
+                    solveStepByStep.setEnabled(true);
+                    message.setText("Now program can try to solve the maze");
+                } else {
+                    solve.setEnabled(false);
+                    solveStepByStep.setEnabled(false);
 
-                repaint();
+                }
+
+                Runnable runnable = () -> repaint();
+                runnable.run();
 
 
             }
